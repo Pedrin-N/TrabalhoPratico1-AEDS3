@@ -1,0 +1,7 @@
+Grafo,T.médio (s),M.média (MB),Custo médio,Taxa de Sucesso
+Grafo pequeno para verificação manual,0.000030,0.000391,2.50,10/10
+Conexões entre perfis do Facebook,0.518472,0.640234,3.70,10/10
+Grafo aleatório com 300 vértices e 768 arestas,0.003492,0.002344,311.60,10/10
+Grafo aleatório com 300 vértices e 4730 arestas,0.005538,0.000391,14.30,10/10
+Mapa das estradas de Roma em 1999,0.337685,0.507031,15101.70,10/10
+Mapa das estradas de Washington DC,2.905804,0.559375,6399.10,10/10
