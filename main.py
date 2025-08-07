@@ -6,6 +6,7 @@ Recebe parâmetros via linha de comando: arquivo_grafo, vértice_origem, vértic
 
 import sys
 import os
+from unittest import result
 from src.graph import Graph
 from src.dijkstra import dijkstra_with_metrics
 
@@ -69,20 +70,16 @@ def main():
         result = dijkstra_with_metrics(graph, source, target)
         
         # Exibir resultados
+        print("-" * 65)
         print("Algoritmo de Dijkstra:")
-        
-        if result['path']:
-            print(f"Caminho mínimo: {result['path']}")
-            if result['cost'] == float('inf'):
-                print("Custo: ∞ (não há caminho)")
-            else:
-                print(f"Custo: {result['cost']}")
-        else:
-            print("Caminho mínimo: []")
+        print(f"Caminho mínimo: {result['path']}")
+        if result['cost'] == float('inf'):
             print("Custo: ∞ (não há caminho)")
-        
-        print(f"Tempo execução: {result['execution_time']:.6f} s")
-        print(f"Memória utilizada: {result['memory_used']:.6f} MB")
+        else:
+            print(f"Custo: {result['cost']}")
+        print(f"Tempo execução: {result['execution_time']:.3f} s")
+        print(f"Memória utilizada: {result['memory_used']:.4f} MB")
+        print("-" * 65)
         
     except Exception as e:
         print(f"Erro durante a execução: {e}")
