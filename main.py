@@ -4,7 +4,7 @@ import tracemalloc
 
 from src.graph import carregar_grafo
 from src.bellman_ford import bellman_ford
-
+from src.dijkstra import dijkstra
 
 def reconstruir_caminho(prev, origem, destino):
     caminho = []
@@ -18,12 +18,11 @@ def reconstruir_caminho(prev, origem, destino):
     caminho.reverse()
     return caminho
 
-
-def medir_execucao_bellman(G, w, origem, destino):
+def medir_execucao(algoritmo, G, w, origem, destino):
     tracemalloc.start()
     inicio = time.time()
 
-    dist, prev = bellman_ford(G, w, origem)
+    dist, prev = algoritmo(G, w, origem)
     caminho = reconstruir_caminho(prev, origem, destino)
     custo = dist[destino]
 
@@ -36,7 +35,6 @@ def medir_execucao_bellman(G, w, origem, destino):
 
     return caminho, custo, tempo_exec, memoria_mb
 
-
 def main():
     if len(sys.argv) != 4:
         print("Uso: python main.py <arquivo.txt> <origem> <destino>")
@@ -46,19 +44,30 @@ def main():
     origem = int(sys.argv[2])
     destino = int(sys.argv[3])
 
-    G, w = carregar_grafo(nome_arquivo)
+    G, w, V, A = carregar_grafo(nome_arquivo)
 
-    caminho, custo, tempo_exec, memoria = medir_execucao_bellman(G, w, origem, destino)
+    caminho_bf, custo_bf, tempo_bf, memoria_bf = medir_execucao(bellman_ford, G, w, origem, destino)
 
-    print(f"\nAlgoritmo de Bellman-Ford:")
-    if caminho is None:
+    dijkstra_grafo = (V, A)
+    caminho_dj, custo_dj, tempo_dj, memoria_dj = medir_execucao(dijkstra, dijkstra_grafo, w, origem, destino)
+
+    print("\nAlgoritmo de Bellman-Ford:")
+    if caminho_bf is None:
         print("  Caminho mínimo: Não existe")
     else:
-        print(f"  Caminho mínimo: {caminho}")
-        print(f"  Custo: {custo}")
-    print(f"  Tempo de execução: {tempo_exec:.6f} s")
-    print(f"  Memória utilizada: {memoria:.6f} MB")
+        print(f"  Caminho mínimo: {caminho_bf}")
+        print(f"  Custo: {custo_bf}")
+    print(f"  Tempo de execução: {tempo_bf:.6f} s")
+    print(f"  Memória utilizada: {memoria_bf:.6f} MB")
 
+    print("\nAlgoritmo de Dijkstra:")
+    if caminho_dj is None:
+        print("  Caminho mínimo: Não existe")
+    else:
+        print(f"  Caminho mínimo: {caminho_dj}")
+        print(f"  Custo: {custo_dj}")
+    print(f"  Tempo de execução: {tempo_dj:.6f} s")
+    print(f"  Memória utilizada: {memoria_dj:.6f} MB")
 
 if __name__ == "__main__":
     main()
