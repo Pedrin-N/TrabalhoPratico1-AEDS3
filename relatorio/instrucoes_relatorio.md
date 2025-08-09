@@ -1,196 +1,152 @@
-# Instruções para o Relatório Final
+# Documentação da Implementação - Algoritmo de Floyd-Warshall
 
-## Estrutura Sugerida para o Relatório
+## Visão Geral
 
-Com base nos documentos gerados, aqui está a estrutura sugerida para o relatório final:
+Este documento descreve a implementação do algoritmo de Floyd-Warshall, que resolve o problema dos caminhos mínimos entre todos os pares de vértices em um grafo ponderado. A implementação é baseada no pseudocódigo clássico do algoritmo.
 
-### 1. Introdução
-- Objetivos do trabalho
-- Descrição do problema do caminho mínimo
-- Justificativa para escolha do algoritmo de Dijkstra
+## Estrutura do Código
 
-### 2. Fundamentação Teórica
-- Conceitos básicos de grafos
-- Algoritmo de Dijkstra: princípios e funcionamento
-- Complexidade computacional teórica
-- Pseudocódigo do algoritmo
+### 1. Classe Graph (`src/graph.py`)
+A classe `Graph` é a mesma, mas um método `get_weight(u, v)` é útil para a inicialização do Floyd-Warshall.
 
-### 3. Metodologia
-- Descrição da implementação
-- Estruturas de dados utilizadas
-- Configuração dos experimentos
-- Métricas coletadas
-
-### 4. Implementação
-- **Usar conteúdo de**: `relatorio/documentacao_implementacao.md`
-- Detalhes da implementação
-- Correspondência com o pseudocódigo
-- Estrutura do código
-
-### 5. Experimentos Computacionais
-- **Usar conteúdo de**: `relatorio/analise_resultados.md`
-- Configuração dos testes
-- Resultados obtidos
-- Análise dos dados
-
-### 6. Análise dos Resultados
-- **Usar conteúdo de**: `relatorio/analise_resultados.md`
-- Interpretação dos resultados
-- Comparação com complexidade teórica
-- Identificação de tendências
-
-### 7. Conclusões
-- Principais descobertas
-- Limitações identificadas
-- Recomendações para melhorias
-- Aplicabilidade prática
-
-## Arquivos Gerados para o Relatório
-
-### 1. `relatorio/documentacao_implementacao.md`
-**Conteúdo:**
-- Visão geral da implementação
-- Estrutura do código
-- Correspondência com pseudocódigo
-- Funções auxiliares
-- Estruturas de dados utilizadas
-- Tratamento de casos especiais
-- Complexidade computacional
-
-**Seções recomendadas para o relatório:**
-- Seção 4 (Implementação)
-- Parte da Seção 3 (Metodologia)
-
-### 2. `relatorio/analise_resultados.md`
-**Conteúdo:**
-- Resumo executivo
-- Metodologia dos experimentos
-- Resultados detalhados
-- Análise de tempo, memória e custo
-- Comparação com limites
-- Conclusões e recomendações
-
-**Seções recomendadas para o relatório:**
-- Seção 5 (Experimentos Computacionais)
-- Seção 6 (Análise dos Resultados)
-- Seção 7 (Conclusões)
-
-### 3. `experiments/results.csv`
-**Conteúdo:**
-- Dados brutos dos experimentos
-- Métricas coletadas para cada grafo
-
-**Uso no relatório:**
-- Tabelas de resultados
-- Gráficos de performance
-- Análise estatística
-
-## Dados dos Experimentos
-
-### Resultados Principais
-
-| Grafo | Vértices | Arestas | T.médio (s) | M.média (MB) | Custo médio |
-|-------|----------|---------|-------------|--------------|-------------|
-| toy.txt | 5 | 7 | 0.000030 | 0.000391 | 2.50 |
-| facebook_combined.txt | 4039 | 352936 | 0.518472 | 0.640234 | 3.70 |
-| rg300_768.txt | 300 | 768 | 0.003492 | 0.002344 | 311.60 |
-| rg300_4730.txt | 300 | 4730 | 0.005538 | 0.000391 | 14.30 |
-| rome99c.txt | 3353 | 17718 | 0.337685 | 0.507031 | 15101.70 |
-| USA-road-dt.DC.txt | 9559 | 78754 | 2.905804 | 0.559375 | 6399.10 |
-
-### Principais Descobertas
-
-1. **Performance**: Algoritmo muito eficiente, processando grafos com milhares de vértices em segundos
-2. **Memória**: Uso muito baixo (máximo 0.64MB), adequado para sistemas com recursos limitados
-3. **Escalabilidade**: Funciona bem até grafos com ~10.000 vértices
-4. **Confiabilidade**: 100% de taxa de sucesso em todos os testes
-
-### Limitações Identificadas
-
-1. Complexidade O(V²) devido ao uso de lista simples
-2. Performance pode degradar em grafos muito densos
-3. Não otimizado para grafos com mais de 10.000 vértices
-
-## Elementos Visuais Sugeridos
-
-### 1. Gráficos de Performance
-- Tempo de execução vs. número de vértices
-- Uso de memória vs. número de vértices
-- Comparação entre diferentes tipos de grafos
-
-### 2. Tabelas Comparativas
-- Resultados por tipo de grafo
-- Análise de complexidade
-- Comparação com limites estabelecidos
-
-### 3. Diagramas
-- Fluxograma do algoritmo
-- Estrutura de dados utilizada
-- Arquitetura do sistema
-
-## Código para Incluir no Relatório
-
-### 1. Implementação Principal
 ```python
-def dijkstra(graph: Graph, source: int) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
-    # Implementação completa do algoritmo
+class Graph:
+    # ... (métodos existentes)
+    def get_weight(self, u, v):
+        # Retorna o peso da aresta (u, v) se existir
+        if u in self.edges and v in [neighbor for neighbor, weight in self.edges[u]]:
+            return self.weights[(u, v)]
+        return None
 ```
 
-### 2. Exemplo de Uso
-```bash
-python main.py data/toy.txt 0 3
+### 2. Implementação do Floyd-Warshall (`src/floyd_warshall.py`)
+
+#### Função Principal: `floyd_warshall(graph)`
+A implementação utiliza programação dinâmica para resolver o problema.
+
+```python
+from typing import Dict, Tuple
+
+def floyd_warshall(graph: Graph) -> Tuple[Dict, Dict]:
+    V = list(graph.get_vertices())
+    dist = {}
+    prev = {}
+
+    # 1. Fase de Inicialização
+    for i in V:
+        for j in V:
+            if i == j:
+                dist[(i, j)] = 0
+                prev[(i, j)] = i
+            elif graph.get_weight(i, j) is not None:
+                dist[(i, j)] = graph.get_weight(i, j)
+                prev[(i, j)] = i
+            else:
+                dist[(i, j)] = float('inf')
+                prev[(i, j)] = None
+
+    # 2. Algoritmo Principal (Loop triplo)
+    for k in V:
+        for i in V:
+            for j in V:
+                # Relaxamento da aresta (i, j) através de k
+                if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]:
+                    dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
+                    prev[(i, j)] = prev[(k, j)] # O predecessor de j no caminho via k
+
+    return dist, prev
 ```
 
-### 3. Resultado de Execução
+#### Correspondência com o Pseudocódigo
+
+| Conceito do Pseudocódigo | Implementação Python |
+| :--- | :--- |
+| Inicialização das matrizes `dist` e `prev` | Primeiro laço duplo (`for i in V: for j in V:`) |
+| Laço principal sobre os vértices intermediários | `for k in V:` |
+| Laços sobre os vértices de origem e destino | `for i in V:` e `for j in V:` |
+| Relaxamento (atualização da distância) | `if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]` |
+
+
+### 3. Funções Auxiliares
+
+#### `get_fw_path(prev, source, target)`
+Reconstrói o caminho a partir da matriz de predecessores. A lógica de reconstrução para Floyd-Warshall é diferente da de Dijkstra.
+
+```python
+from typing import Dict, List
+
+def get_fw_path(prev: Dict, source: int, target: int) -> List[int]:
+    if prev.get((source, target)) is None:
+        return []  # Não há caminho
+    path = [target]
+    while source != target:
+        target = prev[(source, target)]
+        if target is None: return [] # Caminho quebrado
+        path.append(target)
+    return list(reversed(path))
 ```
-Algoritmo de Dijkstra:
-Caminho mínimo: [0, 2, 1, 3]
-Custo: 5.0
-Tempo execução: 0.000055 s
-Memória utilizada: 0.003906 MB
+
+#### `floyd_warshall_with_metrics(graph, source, target)`
+Executa o algoritmo, coleta métricas e retorna o caminho para um par específico (`source`, `target`).
+
+```python
+import psutil
+import os
+import time
+
+def floyd_warshall_with_metrics(graph: Graph, source: int, target: int) -> Dict:
+    # Monitoramento de memória e tempo
+    process = psutil.Process(os.getpid())
+    initial_memory = process.memory_info().rss
+    start_time = time.time()
+    
+    dist, prev = floyd_warshall(graph)
+    
+    execution_time = time.time() - start_time
+    memory_used = process.memory_info().rss - initial_memory
+    
+    # Reconstrução do caminho para o par (source, target)
+    path = get_fw_path(prev, source, target)
+    cost = dist.get((source, target), float('inf'))
+    
+    return {
+        'path': path, 'cost': cost,
+        'execution_time': execution_time,
+        'memory_used': memory_used / (1024 * 1024) # MB
+    }
 ```
 
-## Checklist para o Relatório
+## Estruturas de Dados Utilizadas
 
-### ✅ Implementação
-- [x] Algoritmo de Dijkstra implementado conforme pseudocódigo
-- [x] Estruturas de dados adequadas
-- [x] Tratamento de casos especiais
-- [x] Validação de entrada
+- **Dicionários como Matrizes**: `Dict[Tuple[int, int], float]` é usado para representar as matrizes de distância e predecessores. Isso oferece flexibilidade, embora uma matriz NumPy pudesse ser mais performática em CPython para grafos densos.
+- **Listas (Lists)**: Usadas para armazenar o caminho reconstruído.
 
-### ✅ Experimentos
-- [x] Script de testes implementado
-- [x] 6 grafos diferentes testados
-- [x] 10 execuções por grafo
-- [x] Métricas de tempo, memória e custo coletadas
+## Complexidade Computacional
 
-### ✅ Análise
-- [x] Resultados processados
-- [x] Análise de performance realizada
-- [x] Comparação com limites estabelecidos
-- [x] Conclusões extraídas
+### Análise da Implementação
 
-### ✅ Documentação
-- [x] README completo
-- [x] Documentação da implementação
-- [x] Análise dos resultados
-- [x] Instruções de uso
+**Tempo: $O(V^3)$**
 
-## Próximos Passos
+A complexidade é dominada pelos três laços aninhados (`for k in V`, `for i in V`, `for j in V`), cada um executando $V$ vezes. Isso resulta em uma complexidade cúbica, independente da densidade do grafo.
 
-1. **Compor o relatório final** usando os documentos gerados
-2. **Adicionar elementos visuais** (gráficos, diagramas)
-3. **Revisar e formatar** conforme padrões da disciplina
-4. **Incluir código relevante** no relatório
-5. **Adicionar referências bibliográficas** se necessário
+**Espaço: $O(V^2)$**
 
-## Arquivos Finais do Projeto
+A implementação requer duas matrizes (representadas por dicionários) de tamanho $V \times V$ para armazenar as distâncias (`dist`) e os predecessores (`prev`).
 
-- `src/graph.py` - Classe Graph
-- `src/dijkstra.py` - Implementação do algoritmo
-- `main.py` - Programa principal
-- `experiments/run_tests.py` - Script de experimentos
-- `experiments/results.csv` - Resultados dos testes
-- `requirements.txt` - Dependências
-- `README.md` - Documentação do projeto
-- `relatorio/` - Documentos para o relatório 
+## Conclusões da Implementação
+
+1.  **Corretude**: A implementação segue fielmente o algoritmo clássico de Floyd-Warshall.
+2.  **Simplicidade**: O código é relativamente simples e direto de entender.
+3.  **Performance**: A performance é limitada pela alta complexidade computacional, tornando-a inadequada para grafos com mais de algumas centenas de vértices.
+4.  **Escalabilidade**: O algoritmo não escala bem com o aumento do número de vértices.
+
+## Limitações e Melhorias Futuras
+
+### Limitações Atuais
+1. Complexidade $O(V^3)$ torna o algoritmo lento para grafos grandes.
+2. Complexidade de espaço $O(V^2)$ pode ser um problema em ambientes com memória limitada.
+3. A implementação não detecta ciclos de peso negativo, embora o algoritmo possa ser adaptado para isso.
+
+### Melhorias Possíveis
+1. **Paralelização**: Os laços internos do algoritmo podem ser paralelizados para acelerar a execução em hardware com múltiplos núcleos.
+2. **Uso de NumPy**: Para grafos cujos vértices são inteiros sequenciais, o uso de arrays NumPy em vez de dicionários pode oferecer uma melhoria de performance significativa.
