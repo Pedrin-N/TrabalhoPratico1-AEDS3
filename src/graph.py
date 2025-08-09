@@ -57,8 +57,13 @@ class Graph:
         return self.weights.get((u, v))
     
     def get_vertices(self) -> set:
-        """Retorna o conjunto de vértices do grafo."""
-        return self.vertices
+    # Retorna todos os vértices, inclusive os que só aparecem como destino
+        vertices = set(self.vertices)
+        for u in self.edges:
+            vertices.add(u)
+            for v, _ in self.edges[u]:
+                vertices.add(v)
+        return vertices
     
     def get_edges(self) -> List[Tuple[int, int, float]]:
         """
