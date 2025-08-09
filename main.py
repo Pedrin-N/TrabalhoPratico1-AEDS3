@@ -75,7 +75,9 @@ def main():
     origem = int(sys.argv[2])
     destino = int(sys.argv[3])
 
+    print(f"Carregando grafo de {nome_arquivo}...")
     G, w, V, A = carregar_grafo(nome_arquivo)
+    print(f"Grafo carregado: {len(V)} vértices, {len(A)} arestas")
 
     caminho_bf, custo_bf, tempo_bf, memoria_bf = medir_execucao(bellman_ford, G, w, origem, destino)
 
@@ -102,7 +104,6 @@ def main():
         print(f"  Custo: {custo_dj}")
     print(f"  Tempo de execução: {tempo_dj:.6f} s")
     print(f"  Memória utilizada: {memoria_dj:.6f} MB")
-    
     print("\nAlgoritmo de Floyd-Warshall:")
     if caminho_fw is None:
         print("  Caminho mínimo: Não existe")
